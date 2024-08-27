@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA Calculator - HNDIT ATI Batticaloa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+        .calculator {
+            background-color: #ffcccc;
+            padding: 20px;
+            margin: 50px auto;
+            width: 60%;
+            border-radius: 10px;
+        }
+        .header {
+            background-color: #ff6666;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .header h1, .header h2 {
+            margin: 5px 0;
+        }
+        .inputs-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .inputs-row div {
+            flex: 1;
+            padding: 10px;
+            margin: 0 10px;
+        }
+        .inputs-row label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .inputs-row select {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #000;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #ff6666;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+        .result-header {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <!-- Header with Div -->
+    <div class="header">
+        <h1>GPA Calculator</h1>
+        <h2>HNDIT ATI Batticaloa</h2>
+    </div>
+    
+    <!-- Inputs Row -->
+    <div class="inputs-row">
+        <div>
+            <label for="academicYear">Academic Year:</label>
+            <select id="academicYear">
+                <option value="2019/2020">2019/2020</option>
+                <!-- Add more options if needed -->
+            </select>
+        </div>
+        <div>
+            <label for="level">Level:</label>
+            <select id="level">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <!-- Add more levels if needed -->
+            </select>
+        </div>
+        <div>
+            <label for="semester">Semester:</label>
+            <select id="semester">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <!-- Add more semesters if needed -->
+            </select>
+        </div>
+        <div>
+            <label for="subjects">No. of subjects:</label>
+            <select id="subjects">
+                <!-- Options for 1 to 8 subjects -->
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+            </select>
+        </div>
+    </div>
+
+    <button onclick="addSubjects()">Add</button>
+    
+    <!-- Dynamic Result Header -->
+    <div class="result-header" id="resultHeader"></div>
+    
+    <!-- Subjects Table -->
+    <div id="subjectsTable"></div>
+
+    <!-- GPA Result -->
+    <div id="gpaResult"></div>
+
+</div>
+
+<script>
+    function addSubjects() {
+        // Retrieve selected values
+        const academicYear = document.getElementById("academicYear").value;
+        const level = document.getElementById("level").value;
+        const semester = document.getElementById("semester").value;
+        const subjects = document.getElementById("subjects").value;
+
+        // Set year and semester labels based on user selection
+        let yearText = level === "1" ? "First Year" : "Second Year";
+        let semesterText = semester === "1" ? "First Semester" : "Second Semester";
+
+        // Display dynamic heading based on selected values
+        const resultHeader = document.getElementById("resultHeader");
+        resultHeader.innerHTML = `<h2>${yearText} - ${semesterText} - Academic Year ${academicYear}</h2>`;
+
+        // Generate subjects table based on the number of subjects
+        let tableHTML = `<table>
+            <tr>
+                <th>Subject</th>
+                <th>Code</th>
+                <th>Marks</th>
+            </tr>`;
+        
+        for (let i = 0; i < subjects; i++) {
+            tableHTML += `
+            <tr>
+                <td><input type="text" id="subject${i}" placeholder="Subject" required></td>
+                <td><input type="text" id="code${i}" placeholder="Code" required></td>
+                <td><input type="number" id="marks${i}" placeholder="Marks" min="0" max="100" required></td>
+            </tr>`;
+        }
+        tableHTML += `</table>
+            <button onclick="calculateGPA()">Submit Subjects</button>`;
+        
+        // Display the table
+        document.getElementById("subjectsTable").innerHTML = tableHTML;
+    }
+
+    function calculateGPA() {
+        let totalCredits = 0;
+        let totalGPV = 0;
+        const subjects = document.getElementById("subjects").value;
+
+        let subjectDetailsHTML = `
+            <h2>The subject details</h2>
+            <table>
+                <tr>
+                    <th>Subject</th>
+                    <th>Code</th>
+                    <th>Marks</th>
+                    <th>Grade</th>
+                    <th>Credit</th>
+                    <th>GPV for Grade</th>
+                    <th>GPV for Subject</th>
+                </tr>`;
+        
+        for (let i = 0; i < subjects; i++) {
+            const subject = document.getElementById(`subject${i}`).value;
+            const code = document.getElementById(`code${i}`).value;
+            const marks = parseFloat(document.getElementById(`marks${i}`).value);
+
+            if (isNaN(marks) || marks < 0 || marks > 100) {
+                alert(`Please enter valid marks for ${subject}`);
+                return;
+            }
+
+            let gradePoint = 0;
+            let grade = '';
+            if (marks >= 85) {
+                grade = 'A+';
+                gradePoint = 4.00;
+            } else if (marks >= 70) {
+                grade = 'A';
+                gradePoint = 4.00;
+            } else if (marks >= 65) {
+                grade = 'A-';
+                gradePoint = 3.70;
+            } else if (marks >= 60) {
+                grade = 'B+';
+                gradePoint = 3.30;
+            } else if (marks >= 55) {
+                grade = 'B';
+                gradePoint = 3.00;
+            } else if (marks >= 50) {
+                grade = 'B-';
+                gradePoint = 2.70;
+            } else if (marks >= 45) {
+                grade = 'C+';
+                gradePoint = 2.30;
+            } else if (marks >= 40) {
+                grade = 'C';
+                gradePoint = 2.00;
+            } else if (marks >= 35) {
+                grade = 'C-';
+                gradePoint = 1.70;
+            } else if (marks >= 30) {
+                grade = 'D+';
+                gradePoint = 1.30;
+            } else if (marks >= 25) {
+                grade = 'D';
+                gradePoint = 1.00;
+            } else {
+                grade = 'E';
+                gradePoint = 0.00;
+            }
+
+            const credit = parseInt(code[code.length - 1]);
+            const gpvForSubject = gradePoint * credit;
+
+            totalCredits += credit;
+            totalGPV += gpvForSubject;
+
+            subjectDetailsHTML += `
+                <tr>
+                    <td>${subject}</td>
+                    <td>${code}</td>
+                    <td>${marks}</td>
+                    <td>${grade}</td>
+                    <td>${credit}</td>
+                    <td>${gradePoint.toFixed(2)}</td>
+                    <td>${gpvForSubject.toFixed(2)}</td>
+                </tr>`;
+        }
+
+        const finalGPA = totalCredits > 0 ? (totalGPV / totalCredits).toFixed(2) : 'N/A';
+        subjectDetailsHTML += `
+            <tr>
+                <td colspan="7"><strong>Total GPV:${totalGPV.toFixed(2)}</strong></td>
+            </tr>
+            <tr>
+                <td colspan="7"><strong>Total Credits:${totalCredits}</strong> </td>
+                
+            </tr>
+            <tr>
+                <td colspan="7"><strong>Final GPA:${finalGPA}</strong></td>
+            </tr>
+            </table>`;
+
+        document.getElementById("gpaResult").innerHTML = subjectDetailsHTML;
+    }
+</script>
+
+</body>
+</html>
